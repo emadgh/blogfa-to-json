@@ -56,6 +56,7 @@ func main() {
 			log.Println("failed downloading ", page_query, current_page, ", trying again")
 			continue // try until get it
 		}
+		nlinksfinded := 0
 		doc.Find(".posttitle").Each(func(i int, s *goquery.Selection) {
 			href, ok := s.Attr("href")
 			if !ok {
@@ -69,8 +70,11 @@ func main() {
 
 			wg.Add(1)
 			posts_channel <- href
+			nlinksfinded++
 		})
-
+		if nlinksfinded == 0 {
+			break
+		}
 		current_page++
 		if page_limit > 0 && current_page > page_limit {
 			break
@@ -89,8 +93,7 @@ func main() {
 		}
 		log.Println("saving ", min, " to ", max)
 		json, _ := json.Marshal(posts[min:max])
-		err := ioutil.WriteFile("posts_"+strconv.Itoa(i)+".json", json, 0644)
-		log.Println(err)
+		ioutil.WriteFile("posts_"+strconv.Itoa(i)+".json", json, 0644)
 	}
 }
 
@@ -129,7 +132,7 @@ func getComments(id string) []*WpComment {
 	for {
 		doc, err := goquery.NewDocument(url + "comments/?blogid=shabeasheghan&postid=" + id)
 		if err != nil {
-			log.Println("failed downloading comment page ", id, ", trying again")
+			log.Println("failed downloading comment:", id, ", trying again")
 			continue
 		}
 		doc.Find(".box").Each(func(i int, s *goquery.Selection) {
