@@ -66,7 +66,6 @@ func main() {
 			}
 			log.Println("link:" + href)
 
-			// post_links = append(post_links, href)
 			wg.Add(1)
 			posts_channel <- href
 		})
@@ -76,16 +75,9 @@ func main() {
 			break
 		}
 	}
-	// close(posts_channel)
 
 	wg.Wait()
 
-	// if false {
-	// 	// fetching posts
-	// 	for _, pl := range post_links {
-	// 		getPost(pl)
-	// 	}
-	// }
 	plen := len(posts)
 	for i := 0; i < (plen / chunk); i++ {
 		min := i * chunk
