@@ -53,6 +53,7 @@ func main() {
 	for {
 		doc, err := goquery.NewDocument(url + page_query + strconv.Itoa(current_page))
 		if err != nil {
+			log.Println("failed downloading ", page_query, current_page, ", trying again")
 			continue // try until get it
 		}
 		doc.Find(".posttitle").Each(func(i int, s *goquery.Selection) {
@@ -75,9 +76,10 @@ func main() {
 			break
 		}
 	}
-
+	log.Println("fetching links done")
 	wg.Wait()
 
+	log.Println("start saving json files")
 	plen := len(posts)
 	for i := 0; i < (plen / chunk); i++ {
 		min := i * chunk
@@ -85,6 +87,7 @@ func main() {
 		if max > plen {
 			max = plen
 		}
+		log.Println("saving ", min, " to ", max)
 		json, _ := json.Marshal(posts[min:max])
 		err := ioutil.WriteFile("posts_"+strconv.Itoa(i)+".json", json, 0644)
 		log.Println(err)
@@ -95,6 +98,7 @@ func getPost(pl string) {
 	for {
 		doc, err := goquery.NewDocument(url + pl)
 		if err != nil {
+			log.Println("failed downloading ", pl, ", trying again")
 			continue
 		}
 		sel := doc.Find(".post")
@@ -125,6 +129,7 @@ func getComments(id string) []*WpComment {
 	for {
 		doc, err := goquery.NewDocument(url + "comments/?blogid=shabeasheghan&postid=" + id)
 		if err != nil {
+			log.Println("failed downloading comment page ", id, ", trying again")
 			continue
 		}
 		doc.Find(".box").Each(func(i int, s *goquery.Selection) {
